@@ -14,11 +14,8 @@ struct HelloModel {
         self.text = text
     }
     
+    // backgroundColor = isActive ? .mustard : .inactiveButtonGray
     func textHello(_ text: String?) -> String {
-        if text == "leohl" {
-            return "hello"
-        } else {
-            return "введи leohl"
-        }
+        text == "leohl" ? "hello" : "leohl"
     }
 }

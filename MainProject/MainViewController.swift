@@ -5,116 +5,76 @@
 //  Created by Даниил Димов on 04.11.2022.
 //
 
-
 import UIKit
 
 final class MainViewController: UIViewController {
     
-    private var model = FIOModel()
+    private var userModel = UserModel()
     private var helloTextModel = HelloModel()
     
-    private lazy var helloLabel: UILabel = {
-        let resultLabel = UILabel()
-        resultLabel.translatesAutoresizingMaskIntoConstraints = false
-        return resultLabel
+    private let helloLabel = UILabel()
+    private let resultLabel = UILabel()
+    private let randomLabel = UILabel()
+    private let nameLabel = UILabel()
+    private let familyLabel = UILabel()
+    private let fatherLabel = UILabel()
+    
+    private let addSumButton: CustomButton = {
+        let button = CustomButton()
+        button.configure(type: .randomButton)
+        button.updateState(isActive: true)
+        return button
     }()
     
-    private lazy var resultLabel: UILabel = {
-        let resultLabel = UILabel()
-        resultLabel.translatesAutoresizingMaskIntoConstraints = false
-        return resultLabel
+    private let guessNumberButton: CustomButton = {
+        let button = CustomButton()
+        button.configure(type: .sumButton)
+        button.updateState(isActive: true)
+        return button
     }()
     
-    private lazy var randomLabel: UILabel = {
-        let randomLabel = UILabel()
-        randomLabel.translatesAutoresizingMaskIntoConstraints = false
-        return randomLabel
+    private let toBeginButton: CustomButton = {
+        let button = CustomButton()
+        button.configure(type: .helloButton)
+        button.updateState(isActive: true)
+        button.addTarget(MainViewController.self, action: #selector(validityHello), for: .touchUpInside)
+        return button
     }()
     
-    private lazy var nameLabel: UILabel = {
-        let familyLabel = UILabel()
-        familyLabel.translatesAutoresizingMaskIntoConstraints = false
-        return familyLabel
-    }()
+    private lazy var stackLabel = UIStackView(view: [nameLabel, familyLabel, fatherLabel], axis: .vertical, spacing: 7)
     
-    private lazy var familyLabel: UILabel = {
-        let familyLabel = UILabel()
-        familyLabel.translatesAutoresizingMaskIntoConstraints = false
-        return familyLabel
-    }()
-    
-    private lazy var fatherLabel: UILabel = {
-        let familyLabel = UILabel()
-        familyLabel.translatesAutoresizingMaskIntoConstraints = false
-        return familyLabel
-    }()
-    
-    private lazy var addSumButton: UIButton = {
-        let addSumButton = UIButton(type: .system)
-        addSumButton.backgroundColor = .blue
-        addSumButton.setTitle("Угадай число", for: .normal)
-        addSumButton.setTitleColor(.white, for: .normal)
-        addSumButton.layer.cornerRadius = 7
-        addSumButton.addTarget(self, action: #selector(randomGame), for: .touchUpInside)
-        addSumButton.translatesAutoresizingMaskIntoConstraints = false
-        return addSumButton
-    }()
-    
-    private lazy var guessNumberButton: UIButton = {
-        let guessNumberButton = UIButton(type: .system)
-        guessNumberButton.backgroundColor = .blue
-        guessNumberButton.setTitle("Сложение", for: .normal)
-        guessNumberButton.setTitleColor(.white, for: .normal)
-        guessNumberButton.layer.cornerRadius = 7
-        guessNumberButton.addTarget(self, action: #selector(alertguessNumberButton), for: .touchUpInside)
-        guessNumberButton.translatesAutoresizingMaskIntoConstraints = false
-        return guessNumberButton
-    }()
-    
-    private lazy var toBeginButton: UIButton = {
-        let toBeginButton = UIButton(type: .system)
-        toBeginButton.backgroundColor = .blue
-        toBeginButton.setTitle("Начать", for: .normal)
-        toBeginButton.setTitleColor(.white, for: .normal)
-        toBeginButton.layer.cornerRadius = 7
-        toBeginButton.addTarget(self, action: #selector(validityHello), for: .touchUpInside)
-        toBeginButton.translatesAutoresizingMaskIntoConstraints = false
-        return toBeginButton
-    }()
+    private lazy var stackButton = UIStackView(view: [addSumButton, guessNumberButton], axis: .horizontal, spacing: 50)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        [helloLabel, resultLabel, randomLabel, nameLabel, familyLabel, fatherLabel, stackLabel, addSumButton, stackButton, guessNumberButton, toBeginButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
         alertWithTF()
-        setupLayout()
+        setupElement()
     }
 
-    @objc func validityHello() {
+    @objc private func validityHello() {
         let alert = UIAlertController(title: "Верни hello", message: "Введи leohl", preferredStyle: .alert)
-        let action = UIAlertAction(title: "Вернуть", style: .default) { (action ) in
-            self.helloLabel.text = self.helloTextModel.textHello(alert.textFields?.first?.text ?? "")
+        let action = UIAlertAction(title: "Вернуть", style: .default) { [weak self] action in
+            self?.helloLabel.text = self?.helloTextModel.textHello(alert.textFields?.first?.text ?? "")
            
         }
-        alert.addTextField{ (textField: UITextField) in
+        alert.addTextField{ textField in
             textField.keyboardType = .default
         }
         alert.addAction(action)
         self.present(alert, animated: true)
     }
     
-    @objc func randomGame() {
+    @objc private func randomGame() {
         let rollIt = String(arc4random_uniform(3))
         
         let alert = UIAlertController(title: "Cыграй в игру - угадай число", message: "Введи число", preferredStyle: .alert)
-        let action = UIAlertAction(title: "Сыграть", style: .default) { (action ) in
+        let action = UIAlertAction(title: "Сыграть", style: .default) { action in
             let number = alert.textFields?[0]
-            
-            if number?.text == rollIt {
-                self.randomLabel.text = "угадал"
-            } else {
-                self.randomLabel.text = "неугадал"
-            }
-            
+            number?.text == rollIt ? "угадал" : "не угадал "
         }
         alert.addTextField{ (textField: UITextField) in
             textField.keyboardType = .default
@@ -124,92 +84,61 @@ final class MainViewController: UIViewController {
         
     }
     
-    @objc func alertguessNumberButton() {
+    @objc private func alertguessNumberButton() {
         let alert = UIAlertController(title: "Cыграй в игру", message: "Введи два числа", preferredStyle: .alert)
-        let action = UIAlertAction(title: "Сыграть", style: .default) { (action ) in
+        let action = UIAlertAction(title: "Сыграть", style: .default) { [weak self] action in
             let firstNumber = alert.textFields?[0]
             let twoNumber = alert.textFields?[1]
-            self.resultLabel.text = " Сумма введеных чисел = \(String(Int(firstNumber?.text ?? "0")! + Int(twoNumber?.text ?? "0")!))"
+            self.resultLabel.text = String(Int(firstNumber.text) + (Int(twoNumber?.text)))
         }
-        alert.addTextField{ (textField: UITextField) in
+        alert.addTextField{ textField in
             textField.keyboardType = .default
         }
-        alert.addTextField{ (textField: UITextField) in
+        alert.addTextField{ textField in
             textField.keyboardType = .default
         }
         alert.addAction(action)
-        self.present(alert, animated: true)
+        present(alert, animated: true)
     }
 
-    private func setupLayout() {
+    private func setupElement() {
+
+        view.addSubview(stackLabel)
+        stackLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        stackLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         
-        //MARK: - Настройка с кнопками лейблами
-        let stackview = UIStackView()
-        stackview.axis = .vertical
-        stackview.spacing = 7
-        stackview.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(stackButton)
+        view.addSubview(resultLabel)
+        view.addSubview(randomLabel)
+        view.addSubview(toBeginButton)
+        view.addSubview(helloLabel)
         
-        stackview.addArrangedSubview(nameLabel)
-        stackview.addArrangedSubview(familyLabel)
-        stackview.addArrangedSubview(fatherLabel)
-        
-        self.view.addSubview(stackview)
-        stackview.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        stackview.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        
-        //MARK: - Настройки стэка с кнопками
-        let stackviewButton = UIStackView()
-        stackviewButton.axis = .horizontal
-        stackviewButton.distribution = .fillProportionally
-        stackviewButton.spacing = 50
-        stackviewButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        stackviewButton.addArrangedSubview(addSumButton)
-        stackviewButton.addArrangedSubview(guessNumberButton)
-        
-        self.view.addSubview(stackviewButton)
         NSLayoutConstraint.activate([
-            stackviewButton.topAnchor.constraint(equalTo: stackview.bottomAnchor, constant: 35),
-            stackviewButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
-            stackviewButton.widthAnchor.constraint(equalToConstant: 300),
-            stackviewButton.heightAnchor.constraint(equalToConstant: 50)
-        ])
-        
-        //MARK: - Настройка результата лейбла
-        self.view.addSubview(resultLabel)
-        NSLayoutConstraint.activate([
-            resultLabel.topAnchor.constraint(equalTo: stackviewButton.bottomAnchor, constant: 15),
+            stackButton.topAnchor.constraint(equalTo: stackLabel.bottomAnchor, constant: 35),
+            stackButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
+            stackButton.widthAnchor.constraint(equalToConstant: 300),
+            stackButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            resultLabel.topAnchor.constraint(equalTo: stackButton.bottomAnchor, constant: 15),
             resultLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
             resultLabel.widthAnchor.constraint(equalToConstant: 300),
-            resultLabel.heightAnchor.constraint(equalToConstant: 50)
-        ])
-        
-        //MARK: - Настройка рандомного лейбла
-        self.view.addSubview(randomLabel)
-        NSLayoutConstraint.activate([
-            randomLabel.topAnchor.constraint(equalTo: stackviewButton.bottomAnchor, constant: 15),
+            resultLabel.heightAnchor.constraint(equalToConstant: 50),
+            
+            randomLabel.topAnchor.constraint(equalTo: stackButton.bottomAnchor, constant: 15),
             randomLabel.leadingAnchor.constraint(equalTo: resultLabel.leadingAnchor, constant: 250),
             randomLabel.widthAnchor.constraint(equalToConstant: 300),
-            randomLabel.heightAnchor.constraint(equalToConstant: 50)
-        ])
-        //MARK: - Настройка кнопки начать
-        self.view.addSubview(toBeginButton)
-        NSLayoutConstraint.activate([
-            toBeginButton.bottomAnchor.constraint(equalTo: stackview.topAnchor, constant: -120),
+            randomLabel.heightAnchor.constraint(equalToConstant: 50),
+            
+            toBeginButton.bottomAnchor.constraint(equalTo: stackLabel.topAnchor, constant: -120),
             toBeginButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             toBeginButton.widthAnchor.constraint(equalToConstant: 300),
-            toBeginButton.heightAnchor.constraint(equalToConstant: 50)
-        ])
-        
-        //MARK: - Настройка кнопки hellotext
-        self.view.addSubview(helloLabel)
-        NSLayoutConstraint.activate([
+            toBeginButton.heightAnchor.constraint(equalToConstant: 50),
+            
             helloLabel.bottomAnchor.constraint(equalTo: toBeginButton.topAnchor, constant: -50),
             helloLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             helloLabel.widthAnchor.constraint(equalToConstant: 300),
             helloLabel.heightAnchor.constraint(equalToConstant: 50)
         ])
-
     }
 }
 
@@ -217,34 +146,34 @@ extension  MainViewController {
     
     func alertWithTF() {
         let alert = UIAlertController(title: "Привет, Гость!", message: "Пожалуйста, введи свое ФИО", preferredStyle: .alert)
-        let action = UIAlertAction(title: "Ввести", style: .default, handler: { (action) -> Void in
-            let family = alert.textFields![0]
-            let name = alert.textFields![1]
-            let father = alert.textFields![2]
+        let action = UIAlertAction(title: "Ввести", style: .default, handler: { [weak self] action in
+            guard let family = alert.textFields?[0] else { return }
+            guard let name = alert.textFields?[1] else { return }
+            guard let father = alert.textFields?[2] else { return}
             
-            self.model.family = family.text
-            self.model.name = name.text
-            self.model.father = father.text
+            self?.userModel.family = family.text
+            self?.userModel.name = name.text
+            self?.userModel.father = father.text
         
-            self.familyLabel.text = self.model.family
-            self.nameLabel.text = self.model.name
-            self.fatherLabel.text = self.model.father
+            self?.familyLabel.text = self?.userModel.family
+            self?.nameLabel.text = self?.userModel.name
+            self?.fatherLabel.text = self?.userModel.father
            
         })
         
-        let cancel = UIAlertAction(title: "Выйти", style: .destructive, handler: { (action) -> Void in })
+        let cancel = UIAlertAction(title: "Выйти", style: .destructive, handler: { action in })
     
-        alert.addTextField { (textField: UITextField) in
+        alert.addTextField { textField in
             textField.placeholder = "Введи свою фамилию"
             textField.keyboardType = .default
         }
         
-        alert.addTextField { (textField: UITextField) in
+        alert.addTextField { textField in
             textField.placeholder = "Введи свое имя "
             textField.keyboardType = .default
         }
         
-        alert.addTextField { (textField: UITextField) in
+        alert.addTextField { textField in
             textField.placeholder = "Введи свое отчество"
             textField.keyboardType = .default
         }
